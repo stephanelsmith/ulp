@@ -17,6 +17,7 @@ make BOARD=SS_ULP_C6
 make BOARD=SS_ULP_C6 USER_C_MODULES=~/micro-ulp/upy/c_modules/esp32.cmake
 
 make BOARD=SS_ULP_S3 USER_C_MODULES=$IDF_PATH/../micro-ulp/upy/c_modules/esp32.cmake
+make BOARD=SS_ULP_C6 USER_C_MODULES=$IDF_PATH/../micro-ulp/upy/c_modules/esp32.cmake
 
 
 ### build/run notes

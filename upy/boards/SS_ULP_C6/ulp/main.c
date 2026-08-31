@@ -1,9 +1,7 @@
 
-
 #include <stdint.h>
-/*#include "ulp_riscv_gpio.h"*/
-/*#include "ulp_riscv_utils.h"*/
-/*#include "ulp_riscv.h"*/
+#include "ulp_lp_core_gpio.h"
+#include "ulp_lp_core_utils.h"
 
 #define LED_GPIO_NUM 3
 
@@ -14,6 +12,6 @@ void main(){
       if(var_count){
           var_counter++;
       }
-      /*ulp_riscv_gpio_output_level(LED_GPIO_NUM, 1);*/
-      /*ulp_riscv_gpio_output_level(LED_GPIO_NUM, 0);*/
+      ulp_lp_core_gpio_set_level(LED_GPIO_NUM, 1);
+      ulp_lp_core_gpio_set_level(LED_GPIO_NUM, 0);
 }
