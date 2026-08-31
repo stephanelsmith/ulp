@@ -1,2 +1,2 @@
 include("$(MPY_DIR)/extmod/asyncio")
-freeze("/home/ssmith/ulp/src")
+freeze("../../../src") # relative to ....../boards/IB_GPS0

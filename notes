@@ -1,0 +1,44 @@
+
+git clone --depth 1 --branch v5.5.2 https://github.com/espressif/esp-idf.git esp-idf-v5.5.2
+cd esp-idf-v5.5.2
+git submodule update --init --recursive
+./install.sh
+source export.sh
+
+
+git clone git@github.com:hudl/titan-micropython.git micropython-espidf5.5.2
+cd micropython-espidf5.5.2
+git submodule update --init --recursive
+make -C mpy-cross
+cd ports/esp32
+
+ln -sf ~/micro-upy/upy/boards/* boards/.
+make BOARD=SS_ULP_C6
+make BOARD=SS_ULP_C6 USER_C_MODULES=~/micro-ulp/upy/c_modules/esp32.cmake
+
+make BOARD=SS_ULP_S3 USER_C_MODULES=$IDF_PATH/../micro-ulp/upy/c_modules/esp32.cmake
+
+
+### build/run notes
+```
+make BOARD=SS_ULP_S3 USER_C_MODULES=~/ulp/upy/c_modules/esp32.cmake
+make USER_C_MODULES=~/ulp/upy/c_modules
+
+py -m esptool --chip esp32s3 --port COM90 write_flash -z 0 micropython_ulp\ports\esp32\build-SS_ULP_S3\firmware.bin
+py -m serial.tools.miniterm COM92
+
+py -m esptool --chip esp32s3 --port COM36 write_flash -z 0 micropython_ulp\ports\esp32\build-SS_ULP_S3\firmware.bin
+py -m serial.tools.miniterm COM3
+
+import esp32
+u = esp32.ULP()
+u.set_wakeup_period(1000*1000) # 1s
+u.run_embedded()
+
+# get variables here
+# cat build-SS_ULP_S3/esp-idf/main/ulp_embedded/ulp_embedded.ld
+ulp_var_counter = 0x50000080
+u.read(ulp_var_counter)
+```
+
+
