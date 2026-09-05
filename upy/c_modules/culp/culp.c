@@ -29,18 +29,12 @@ static mp_obj_t ulp_make_new(const mp_obj_type_t *type,
     return MP_OBJ_FROM_PTR(self);
 }
 
-static mp_obj_t esp32_ulp_set_wakeup_period(
-    mp_obj_t self_in,
-    mp_obj_t period_index_in,
-    mp_obj_t period_us_in
-    ) {
-    mp_uint_t period_index = mp_obj_get_int(period_index_in);
+static mp_obj_t esp32_ulp_set_wakeup_period(mp_obj_t self_in, mp_obj_t period_us_in) {
     mp_uint_t period_us = mp_obj_get_int(period_us_in);
     int _errno;
 #if CONFIG_ULP_COPROC_TYPE_RISCV
-    _errno = ulp_set_wakeup_period(period_index, period_us);
+    _errno = ulp_set_wakeup_period(0, period_us);
 #elif CONFIG_ULP_COPROC_TYPE_LP_CORE
-    (void)period_index;
     lp_core_sleep_duration_us = period_us;
     _errno = ESP_OK;
 #endif
@@ -49,7 +43,7 @@ static mp_obj_t esp32_ulp_set_wakeup_period(
     }
     return mp_const_none;
 }
-static MP_DEFINE_CONST_FUN_OBJ_3(esp32_ulp_set_wakeup_period_obj, esp32_ulp_set_wakeup_period);
+static MP_DEFINE_CONST_FUN_OBJ_2(esp32_ulp_set_wakeup_period_obj, esp32_ulp_set_wakeup_period);
 
 static mp_obj_t esp32_ulp_load_and_run_embedded(mp_obj_t self_in) {
     int _errno;

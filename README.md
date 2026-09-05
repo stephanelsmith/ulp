@@ -1,54 +1,51 @@
 
 
-
-### In `esp32_common.cmake`
-#### add after `idf_component_register`
+### EspIDF
 ```
-if(DEFINED ulp_embedded_sources)
-    list(APPEND MICROPY_DEF_CORE ULP_EMBEDDED_APP=1)
-    set(ulp_app_name 
-        "ulp_embedded"
-    )
-    set(ulp_depentants 
-        ${ulp_depentants} 
-        "esp32_ulp.c"
-    )
-    message("embedded ULP App sources: " ${ulp_embedded_sources} ",  deps: " ${ulp_depentants})
-    ulp_embed_binary(${ulp_app_name} ${ulp_embedded_sources} ${ulp_depentants})
-endif()
+git clone --depth 1 --branch v5.5.2 https://github.com/espressif/esp-idf.git esp-idf-v5.5.2
+cd esp-idf-v5.5.2
+git submodule update --init --recursive
+./install.sh
+source export.sh
 ```
 
-### In `esp32_ulp.c`
-#### add && !CONFIG_ULP_COPROC_TYPE_RISCV to the top-level #if guard
-#### replace
+### Micropython
 ```
-#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
+git clone git@github.com:hudl/titan-micropython.git micropython-espidf5.5.2
+cd micropython-espidf5.5.2
+git submodule update --init --recursive
+make -C mpy-cross
+cd ports/esp32
 ```
-####  with
+
+[Updates required in micropython to enable ULP](docs/ulp.md)
+
+### Build
 ```
-#if (CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) && !CONFIG_ULP_COPROC_TYPE_RISCV
+ln -sf ~/micro-upy/upy/boards/* boards/.
+make BOARD=SS_ULP_S3 USER_C_MODULES=$IDF_PATH/../micro-ulp/upy/c_modules/esp32.cmake
+make BOARD=SS_ULP_C6 USER_C_MODULES=$IDF_PATH/../micro-ulp/upy/c_modules/esp32.cmake
+```
+
+### Run
+```
+# get ulp variables address here:
+cat build-SS_ULP_S3/esp-idf/main/ulp_embedded/ulp_embedded.ld
+cat build-SS_ULP_C6/esp-idf/main/ulp_embedded/ulp_embedded.ld 
+```
+```
+import culp
+u = culp.ULP()
+u.set_wakeup_period(1000*1000) # 1s
+u.run_embedded()
+
+# get variables here
+# cat build-SS_ULP_S3/esp-idf/main/ulp_embedded/ulp_embedded.ld
+ulp_var_counter = 0x50000080  #s3
+u.read(ulp_var_counter)
+ulp_var_counter = 0x50000450  #c6
+u.read(ulp_var_counter)
+```
 ```
 
 
-### In `modesp32.c`
-#### same guard on the module table entry that references esp32_ulp_type
-#### replace
-```
-#if CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3
-```
-####  with
-```
-#if (CONFIG_IDF_TARGET_ESP32 || CONFIG_IDF_TARGET_ESP32S2 || CONFIG_IDF_TARGET_ESP32S3) && !CONFIG_ULP_COPROC_TYPE_RISCV
-```
-
-
-### In `modesp32.h`
-#### wrapped the extern const mp_obj_type_t esp32_ulp_type declaration in #if !CONFIG_ULP_COPROC_TYPE_RISCV
-```
- extern const mp_obj_type_t esp32_partition_type;
- extern const mp_obj_type_t esp32_rmt_type;
-+#if !CONFIG_ULP_COPROC_TYPE_RISCV
- extern const mp_obj_type_t esp32_ulp_type;
-+#endif
- extern const mp_obj_type_t esp32_ldo_type;
-```
